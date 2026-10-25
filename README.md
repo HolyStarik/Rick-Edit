@@ -1,28 +1,40 @@
 # Rick ASCII Edit
 
-Проигрыватель для Windows CMD / Windows Terminal: показывает ролик в цветных ASCII-символах. Первые четыре секунды исходника пропускаются автоматически.
+Проигрыватель для Windows CMD, Windows Terminal и Linux-терминала: показывает ролик в цветных ASCII-символах. Первые четыре секунды исходника пропускаются автоматически.
 
-## Запуск на Windows
+Видео `rick_edit.mp4` лежит рядом со скриптом. Остановка — `Ctrl+C`.
 
-1. Установи Python 3.10 или новее.
-2. Склонируй репозиторий:
+## Arch Linux
 
-   ```cmd
-   git clone https://github.com/HolyStarik/Rick-Edit.git
-   cd Rick-Edit
-   ```
+Установи Python и Git, если их ещё нет, затем склонируй репозиторий:
 
-3. Запусти `run.cmd`. При первом запуске скрипт установит нужные Python-библиотеки.
+```bash
+sudo pacman -S --needed git python python-pip
+git clone https://github.com/HolyStarik/Rick-Edit.git
+cd Rick-Edit
+./run.sh
+```
 
-Видео `rick_edit.mp4` уже лежит рядом со скриптом. Чтобы запустить другой файл, перетащи его на `run.cmd`.
+`run.sh` создаст локальное виртуальное окружение `.venv` и установит зависимости при первом запуске. В следующий раз достаточно выполнить `./run.sh`.
 
-Остановка — `Ctrl+C`. Можно менять `--width` и `--fps` в `run.cmd`, чтобы подстроить размер и плавность под экран ноутбука.
+Для другого файла передай путь первым аргументом:
+
+```bash
+./run.sh "/путь/к/видео.mp4"
+```
+
+## Windows
+
+Установи Python 3.10 или новее, клонируй репозиторий и запусти `run.cmd`. При первом запуске он установит нужные Python-библиотеки.
 
 ## Ручной запуск
 
-```cmd
-python -m pip install -r requirements.txt
-python ascii_video.py "rick_edit.mp4" --start 4 --color
+На Linux сначала установи зависимости в виртуальное окружение:
+
+```bash
+python -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python ascii_video.py "rick_edit.mp4" --start 4 --color
 ```
 
-Если используешь другой ролик, укажи его путь вместо `rick_edit.mp4`.
+Можно менять `--width` и `--fps`, чтобы подстроить размер и плавность под экран.
