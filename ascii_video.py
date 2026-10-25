@@ -26,6 +26,8 @@ def parse_args() -> argparse.Namespace:
                         help="с какого времени начинать, в секундах (по умолчанию: 4)")
     parser.add_argument("--width", type=int,
                         help="максимальная ширина в символах; по умолчанию — весь терминал")
+    parser.add_argument("--fit", choices=("stretch", "contain"), default="stretch",
+                        help="stretch заполняет терминал растяжением; contain сохраняет пропорции")
     parser.add_argument("--fps", type=float, default=12.0,
                         help="частота проигрывания (по умолчанию: 12)")
     parser.add_argument("--color", action="store_true",
@@ -34,7 +36,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def fit_to_terminal(
-    video_size: tuple[int, int], terminal_size: tuple[int, int], max_width: int | None
+    video_size: tuple[int, int],
+    terminal_size: tuple[int, int],
+    max_width: int | None,
+    fit: str,
 ) -> tuple[int, int]:
     video_width, video_height = video_size
     columns, rows = terminal_size
@@ -43,17 +48,21 @@ def fit_to_terminal(
     if max_width is not None:
         available_width = min(available_width, max_width)
 
-    width = min(
-        available_width,
-        max(1, int(available_height * video_width / video_height / CELL_HEIGHT_RATIO)),
-    )
+    if fit == "stretch":
+        return available_width, available_height
+
+    width = min(available_width, max(1, int(
+        available_height * video_width / video_height / CELL_HEIGHT_RATIO
+    )))
     height = max(1, round(width * video_height / video_width * CELL_HEIGHT_RATIO))
     return width, min(height, available_height)
 
 
-def to_ascii(frame: bytes, size: tuple[int, int], width: int, color: bool) -> list[str]:
+def to_ascii(
+    frame: bytes, size: tuple[int, int], width: int, color: bool, target_height: int | None = None
+) -> list[str]:
     source = Image.frombytes("RGB", size, frame)
-    height = max(1, round(width * size[1] / size[0] * CELL_HEIGHT_RATIO))
+    height = target_height or max(1, round(width * size[1] / size[0] * CELL_HEIGHT_RATIO))
     image = source.resize((width, height), Image.Resampling.BILINEAR)
     pixels = list(image.getdata())
     rows: list[str] = []
@@ -121,8 +130,8 @@ def main() -> int:
                 metadata = next(reader)
                 video_size = metadata["size"]
                 source_fps = float(metadata.get("fps") or args.fps)
-                width, _ = fit_to_terminal(
-                    video_size, (columns, terminal_rows), args.width
+                width, height = fit_to_terminal(
+                    video_size, (columns, terminal_rows), args.width, args.fit
                 )
                 next_frame_at = 0.0
                 frame_number = 0
@@ -134,7 +143,7 @@ def main() -> int:
                     if timestamp + 1e-6 < next_frame_at:
                         continue
 
-                    rows = to_ascii(frame, video_size, width, args.color)
+                    rows = to_ascii(frame, video_size, width, args.color, height)
                     picture = center_on_terminal(rows, columns, terminal_rows, width)
                     sys.stdout.write("\x1b[H" + picture + "\x1b[J")
                     sys.stdout.flush()
