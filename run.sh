@@ -13,4 +13,4 @@ if ! "$VENV_DIR/bin/python" -c 'import imageio_ffmpeg, PIL' >/dev/null 2>&1; the
   "$VENV_DIR/bin/python" -m pip install -r "$SCRIPT_DIR/requirements.txt"
 fi
 
-exec "$VENV_DIR/bin/python" "$SCRIPT_DIR/ascii_video.py" "$VIDEO" --start 4 --color --fit stretch
+exec "$VENV_DIR/bin/python" "$SCRIPT_DIR/ascii_video.py" "$VIDEO" --start 4 --color --fit stretch --zoom 1.7

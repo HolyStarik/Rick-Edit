@@ -37,6 +37,8 @@ def parse_args() -> argparse.Namespace:
                         help="максимальная ширина в символах; по умолчанию — весь терминал")
     parser.add_argument("--fit", choices=("stretch", "contain"), default="stretch",
                         help="stretch заполняет терминал растяжением; contain сохраняет пропорции")
+    parser.add_argument("--zoom", type=float, default=1.0,
+                        help="увеличение с обрезкой краёв (например, 1.7)")
     parser.add_argument("--fps", type=float, default=12.0,
                         help="частота проигрывания (по умолчанию: 12)")
     parser.add_argument("--color", action="store_true",
@@ -68,9 +70,20 @@ def fit_to_terminal(
 
 
 def to_ascii(
-    frame: bytes, size: tuple[int, int], width: int, color: bool, target_height: int | None = None
+    frame: bytes,
+    size: tuple[int, int],
+    width: int,
+    color: bool,
+    target_height: int | None = None,
+    zoom: float = 1.0,
 ) -> list[str]:
     source = Image.frombytes("RGB", size, frame)
+    if zoom > 1:
+        crop_width = max(1, round(size[0] / zoom))
+        crop_height = max(1, round(size[1] / zoom))
+        left = (size[0] - crop_width) // 2
+        top = (size[1] - crop_height) // 2
+        source = source.crop((left, top, left + crop_width, top + crop_height))
     height = target_height or max(1, round(width * size[1] / size[0] * CELL_HEIGHT_RATIO))
     image = source.resize((width, height), Image.Resampling.BILINEAR)
     pixels = list(image.getdata())
@@ -123,8 +136,9 @@ def main() -> int:
     if not args.video.is_file():
         print(f"Не найден файл: {args.video}", file=sys.stderr)
         return 2
-    if args.start < 0 or (args.width is not None and args.width < 20) or args.fps <= 0:
-        print("Проверьте параметры: --start >= 0, --width >= 20, --fps > 0.", file=sys.stderr)
+    if (args.start < 0 or (args.width is not None and args.width < 20)
+            or args.fps <= 0 or args.zoom < 1):
+        print("Проверьте параметры: --start >= 0, --width >= 20, --fps > 0, --zoom >= 1.", file=sys.stderr)
         return 2
 
     if args.color and sys.platform == "win32":
@@ -169,7 +183,7 @@ def main() -> int:
                     width, height = fit_to_terminal(
                         video_size, (columns, terminal_rows), args.width, args.fit
                     )
-                    rows = to_ascii(frame, video_size, width, args.color, height)
+                    rows = to_ascii(frame, video_size, width, args.color, height, args.zoom)
                     picture = center_on_terminal(rows, columns, terminal_rows, width)
                     sys.stdout.write(draw_full_frame(picture))
                     sys.stdout.flush()
