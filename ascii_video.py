@@ -31,8 +31,8 @@ def parse_args() -> argparse.Namespace:
         description="Показывает видео символами во весь экран терминала и повторяет его."
     )
     parser.add_argument("video", type=Path, help="путь к исходному видео")
-    parser.add_argument("--start", type=float, default=4.0,
-                        help="с какого времени начинать, в секундах (по умолчанию: 4)")
+    parser.add_argument("--start", type=float, default=0.0,
+                        help="с какого времени начинать, в секундах (по умолчанию: 0)")
     parser.add_argument("--width", type=int,
                         help="максимальная ширина в символах; по умолчанию — весь терминал")
     parser.add_argument("--fit", choices=("stretch", "contain"), default="stretch",

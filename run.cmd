@@ -15,5 +15,5 @@ if errorlevel 1 (
   )
 )
 
-python "%~dp0ascii_video.py" "%VIDEO%" --start 4 --color --fit stretch --zoom 1.7
+python "%~dp0ascii_video.py" "%VIDEO%" --start 0 --color --fit stretch --zoom 1.7
 pause
