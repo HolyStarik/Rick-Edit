@@ -31,12 +31,12 @@ cd Rick-Edit
 
 ## Ручной запуск
 
-На Linux сначала установи зависимости в виртуальное окружение:
+На Linux сначала установи зависимости в виртуальное окружение. `--fit stretch` растягивает кадр на все строки и столбцы текущего терминала:
 
 ```bash
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python ascii_video.py "rick_edit.mp4" --start 4 --color
+.venv/bin/python ascii_video.py "rick_edit.mp4" --start 4 --color --fit stretch
 ```
 
 Можно менять `--width` и `--fps`, чтобы подстроить размер и плавность под экран.

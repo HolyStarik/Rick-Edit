@@ -15,5 +15,5 @@ if errorlevel 1 (
   )
 )
 
-python "%~dp0ascii_video.py" "%VIDEO%" --start 4 --color
+python "%~dp0ascii_video.py" "%VIDEO%" --start 4 --color --fit stretch
 pause
