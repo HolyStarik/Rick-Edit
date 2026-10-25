@@ -104,6 +104,15 @@ def center_on_terminal(
     return "\n".join(output)
 
 
+def draw_full_frame(picture: str) -> str:
+    # Address every row directly and erase it first to prevent leftovers when
+    # frame dimensions change or a line becomes shorter than the previous one.
+    return "".join(
+        f"\x1b[{row_number};1H\x1b[2K{line}"
+        for row_number, line in enumerate(picture.split("\n"), start=1)
+    )
+
+
 def main() -> int:
     args = parse_args()
     if not args.video.is_file():
@@ -157,7 +166,7 @@ def main() -> int:
                     )
                     rows = to_ascii(frame, video_size, width, args.color, height)
                     picture = center_on_terminal(rows, columns, terminal_rows, width)
-                    sys.stdout.write("\x1b[H" + picture + "\x1b[J")
+                    sys.stdout.write(draw_full_frame(picture))
                     sys.stdout.flush()
                     shown_frames += 1
 
