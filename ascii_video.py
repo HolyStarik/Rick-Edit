@@ -110,7 +110,7 @@ def main() -> int:
 
     terminal = shutil.get_terminal_size((120, 40))
     columns, terminal_rows = terminal.columns, terminal.lines
-    terminal_rows = max(1, terminal_rows - 1)  # keep the bottom-right cell unused
+    terminal_rows = max(1, terminal_rows)
     interval = 1.0 / args.fps
     screen_started = False
 
@@ -130,9 +130,6 @@ def main() -> int:
                 metadata = next(reader)
                 video_size = metadata["size"]
                 source_fps = float(metadata.get("fps") or args.fps)
-                width, height = fit_to_terminal(
-                    video_size, (columns, terminal_rows), args.width, args.fit
-                )
                 next_frame_at = 0.0
                 frame_number = 0
                 cycle_started = time.monotonic()
@@ -143,6 +140,12 @@ def main() -> int:
                     if timestamp + 1e-6 < next_frame_at:
                         continue
 
+                    # Re-read the dimensions so resizing the terminal takes effect live.
+                    terminal = shutil.get_terminal_size((columns, terminal_rows))
+                    columns, terminal_rows = terminal.columns, max(1, terminal.lines)
+                    width, height = fit_to_terminal(
+                        video_size, (columns, terminal_rows), args.width, args.fit
+                    )
                     rows = to_ascii(frame, video_size, width, args.color, height)
                     picture = center_on_terminal(rows, columns, terminal_rows, width)
                     sys.stdout.write("\x1b[H" + picture + "\x1b[J")
