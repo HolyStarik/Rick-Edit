@@ -14,7 +14,7 @@ import imageio_ffmpeg
 from PIL import Image
 
 
-PALETTE = " .,:;irsXA253hMHGS#9B&@"
+PALETTE = ".,:;irsXA253hMHGS#9B&@"
 CELL_HEIGHT_RATIO = 0.48
 
 
@@ -82,7 +82,12 @@ def to_ascii(
             light = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
             char = PALETTE[min(len(PALETTE) - 1, int(light * (len(PALETTE) - 1)))]
             if color:
-                parts.append(f"\x1b[38;2;{r};{g};{b}m{char}")
+                # Paint every terminal cell with the source pixel so dark areas
+                # do not reveal a themed terminal background through spaces.
+                foreground = 0 if light > 0.55 else 255
+                parts.append(
+                    f"\x1b[48;2;{r};{g};{b}m\x1b[38;2;{foreground};{foreground};{foreground}m{char}"
+                )
             else:
                 parts.append(char)
         if color:
