@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import sys
 import time
@@ -15,6 +16,14 @@ from PIL import Image
 
 PALETTE = " .,:;irsXA253hMHGS#9B&@"
 CELL_HEIGHT_RATIO = 0.48
+
+
+def get_terminal_size():
+    try:
+        # Read the live TTY dimensions directly; COLUMNS/LINES can be stale.
+        return os.get_terminal_size(sys.stdout.fileno())
+    except OSError:
+        return shutil.get_terminal_size((120, 40))
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,7 +117,7 @@ def main() -> int:
         import os
         os.system("")
 
-    terminal = shutil.get_terminal_size((120, 40))
+    terminal = get_terminal_size()
     columns, terminal_rows = terminal.columns, terminal.lines
     terminal_rows = max(1, terminal_rows)
     interval = 1.0 / args.fps
@@ -141,7 +150,7 @@ def main() -> int:
                         continue
 
                     # Re-read the dimensions so resizing the terminal takes effect live.
-                    terminal = shutil.get_terminal_size((columns, terminal_rows))
+                    terminal = get_terminal_size()
                     columns, terminal_rows = terminal.columns, max(1, terminal.lines)
                     width, height = fit_to_terminal(
                         video_size, (columns, terminal_rows), args.width, args.fit
